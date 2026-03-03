@@ -1,12 +1,17 @@
-function Navbar() {
+import { Link } from 'react-router-dom';
+
+function Navbar({ cartCount }) {
   return (
     <nav>
-      <h1>Pro Store</h1>
+      <Link to="/" className="logo-text"><h1>ProStore</h1></Link>
       <div className="nav-links">
-        <a href="/">Home</a>
-        <a href="/cart">Cart</a>
+        <Link to="/">Home</Link>
+        <Link to="/cart" className="cart-link">
+          Cart <span>({cartCount})</span>
+        </Link>
       </div>
     </nav>
   );
 }
+
 export default Navbar;
