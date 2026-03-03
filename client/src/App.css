@@ -1,80 +1,170 @@
-/* --- Global Responsive Base --- */
+/* --- 1. Global Centering & Colors --- */
 :root {
-  --primary: #2563eb;
-  --bg: #f8fafc;
-  --white: #ffffff;
+  --bg-dark: #0a0a0a;
+  --card-bg: #161618;
+  --accent-purple: #a855f7;
+  --accent-hover: #7e22ce;
+  --text-white: #f8fafc;
+  --text-dim: #94a3b8;
   --max-width: 1200px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background-color: var(--bg);
-  font-family: 'Inter', sans-serif;
-  overflow-x: hidden; /* Prevents horizontal scrolling on mobile */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+  align-items: center; /* Centers the whole app content */
   min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* --- Responsive Navigation --- */
-nav {
+.main-content {
+  width: 100%;
+  max-width: var(--max-width);
+  padding: 4rem 1.5rem;
   display: flex;
-  flex-direction: column; /* Stack on mobile */
-  align-items: center;
-  padding: 1rem;
-  background: var(--white);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  flex-direction: column;
+  align-items: center; /* Ensures banner and grid are centered */
+}
+
+/* --- 2. Purple Hero Banner --- */
+.purple-banner-container {
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #4c1d95 100%); 
+  border-radius: 32px;         /* Apple-style deep curves */
+  padding: 60px 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 1000px;           /* Perfectly balanced width */
+  margin-bottom: 4rem;
+  color: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.purple-banner-container h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.5rem); /* Responsive font size */
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.purple-banner-container p {
+  margin-top: 1rem;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+}
+
+/* --- 3. Section Titles --- */
+.grid-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.text-dim {
+  color: var(--text-dim);
+}
+
+/* --- 4. Fixed 3-Column Grid --- */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile */
+  gap: 2.5rem;
+  width: 100%;
+  justify-items: center; 
 }
 
 @media (min-width: 768px) {
-  nav {
-    flex-direction: row; /* Horizontal on desktop */
-    justify-content: space-between;
-    padding: 1rem 5%;
-  }
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* --- Main Content Area --- */
-.main-content {
-  flex: 1;
-  width: 100%;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 1rem;
+@media (min-width: 1024px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* --- The Product Grid (Magic for Responsiveness) --- */
-.product-grid {
-  display: grid;
-  /* 1 column on mobile, automatically adds more as screen widens */
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem 0;
-}
-
-/* --- Responsive Cart --- */
-.cart-container {
+/* --- 5. Uniform Premium Cards --- */
+.card {
+  background: var(--card-bg);
+  border-radius: 28px;
+  overflow: hidden;
   display: flex;
-  flex-direction: column; /* Stack vertically on mobile */
-  gap: 2rem;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 360px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-@media (min-width: 992px) {
-  .cart-container {
-    flex-direction: row; /* Side-by-side on large screens */
-    align-items: flex-start;
-  }
-  .cart-items { flex: 2; }
-  .cart-summary { flex: 1; position: sticky; top: 20px; }
+.card:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: var(--accent-purple);
 }
 
-/* --- Utility Images --- */
-img {
+.img-container {
+  width: 100%;
+  height: 320px;
+  padding: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #111111; 
+}
+
+.product-img {
   max-width: 100%;
-  height: auto;
-  display: block;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+
+.product-info {
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.product-info h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-white);
+}
+
+.price {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  margin-top: auto;
+  margin-bottom: 1.5rem;
+}
+
+/* --- 6. Buy Button --- */
+.add-btn {
+  width: 110px;
+  padding: 0.6rem 1.2rem;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 auto; /* Centers button in info section */
+}
+
+.add-btn:hover {
+  background: var(--accent-hover);
+  transform: scale(1.05);
 }
