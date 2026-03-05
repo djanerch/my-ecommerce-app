@@ -1,75 +1,100 @@
-const express = require('express');
-const cors = require('cors');
-const mysql = require('mysql2/promise'); 
 require('dotenv').config();
 
+const express = require('express');
+const cors = require('cors');
+const mysql = require('mysql2/promise');
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-// Middleware
-app.use(cors()); 
-app.use(express.json()); 
+/* -------------------- MIDDLEWARE -------------------- */
+app.use(cors());
+app.use(express.json());
 
-// Database Connection Pool
+/* -------------------- DATABASE -------------------- */
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'ecommerce_db',
+    port: process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
-// Test DB Connection
-db.getConnection()
-    .then(connection => {
-        console.log('✅ Database connected successfully');
-        connection.release();
-    })
-    .catch(err => {
-        console.error('❌ Database connection failed:', err.message);
+/* -------------------- TEST DB CONNECTION -------------------- */
+async function testConnection() {
+    const connection = await db.getConnection();
+    console.log('✅ Database connected successfully');
+    connection.release();
+}
+
+/* -------------------- ROUTES -------------------- */
+
+// Health check
+app.get('/', (req, res) => {
+    res.json({ message: '🚀 API is running' });
+});
+
+// Get all products
+app.get('/api/products', async (req, res, next) => {
+    try {
+
+        const [rows] = await db.query(`
+            SELECT 
+                id,
+                name,
+                description,
+                price,
+                stock,
+                image_url AS image
+            FROM products
+        `);
+
+        console.log(`📦 Sending ${rows.length} products to frontend`);
+
+        res.json(rows);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+/* -------------------- 404 HANDLER -------------------- */
+
+app.use((req, res) => {
+    res.status(404).json({
+        error: "Route not found"
+    });
+});
+
+/* -------------------- GLOBAL ERROR HANDLER -------------------- */
+
+app.use((err, req, res, next) => {
+
+    console.error("🔥 Server Error:", err);
+
+    res.status(500).json({
+        error: "Internal Server Error"
     });
 
-// --- API ROUTES ---
+});
 
-// 1. Get All Products
-app.get('/api/products', async (req, res) => {
+/* -------------------- START SERVER -------------------- */
+
+async function startServer() {
+
     try {
-        // We use "AS image" to match your React frontend key 'product.image'
-        const [rows] = await db.query(
-            'SELECT id, name, description, price, stock, image_url AS image FROM products'
-        );
-        res.json(rows);
-    } catch (error) {
-        console.error("Error fetching products:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        await testConnection();
+    } catch (err) {
+        console.error("⚠️ Starting server without database...");
     }
-});
 
-// 2. Get Single Product (For your ProductDetails.jsx page)
-app.get('/api/products/:id', async (req, res) => {
-    try {
-        const [rows] = await db.query(
-            'SELECT id, name, description, price, stock, image_url AS image FROM products WHERE id = ?',
-            [req.params.id]
-        );
-        
-        if (rows.length === 0) {
-            return res.status(404).json({ message: "Product not found" });
-        }
-        
-        res.json(rows[0]);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
 
-// Health Check
-app.get('/', (req, res) => {
-    res.send('ProStore API is running...');
-});
+}
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+startServer();
