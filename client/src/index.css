@@ -1,68 +1,149 @@
+/* --- 1. Global Setup & Colors --- */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg-dark: #0a0a0a;
+  --card-bg: #161618;
+  --accent-purple: #a855f7;
+  --accent-hover: #7e22ce;
+  --text-white: #f8fafc;
+  --text-dim: #94a3b8;
+  --max-width: 1200px;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+body, #root {
   min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* --- 2. Navbar --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background-color: var(--card-bg);
+  border-bottom: 1px solid #333;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { color: #fff; text-decoration: none; font-weight: 500; transition: 0.3s; }
+.nav-links a:hover { color: var(--accent-purple); }
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
   cursor: pointer;
-  transition: border-color 0.25s;
+  font-weight: 500;
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.logout-btn:hover { color: var(--accent-purple); }
+
+/* --- 3. Main Layout --- */
+.main-content {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* --- 4. Purple Hero Banner --- */
+.purple-banner-container {
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #4c1d95 100%); 
+  border-radius: 32px;
+  padding: 60px 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 1000px;
+  margin-bottom: 4rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* --- 5. Product Grid --- */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.card {
+  background: var(--card-bg);
+  border-radius: 28px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card:hover { transform: translateY(-10px); border-color: var(--accent-purple); }
+
+.product-img { max-width: 100%; height: 200px; object-fit: contain; margin-bottom: 1rem; }
+
+/* --- 6. Auth Container (Login/Register) --- */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 4rem 1rem;
+}
+
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 350px;
+}
+
+.auth-container input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #111;
+  color: white;
+}
+
+.auth-container button {
+  padding: 12px;
+  background: var(--accent-purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.add-btn {
+  background: var(--accent-purple);
+  padding: 0.6rem 1.2rem;
+  border-radius: 24px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+/* --- 7. Cart Page --- */
+.cart-page { padding: 2rem; max-width: 800px; margin: 0 auto; color: white; width: 100%; }
+.cart-container { display: flex; gap: 2rem; }
+.cart-list { flex: 2; }
+.summary { flex: 1; padding: 2rem; }
+.cart-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+  .cart-container { flex-direction: column; }
+  .summary { position: sticky; bottom: 20px; }
 }

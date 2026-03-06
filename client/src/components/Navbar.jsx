@@ -1,14 +1,24 @@
 import { Link } from 'react-router-dom';
 
-function Navbar({ cartCount }) {
+function Navbar({ cartCount, isLoggedIn, handleLogout }) {
   return (
-    <nav>
-      <Link to="/" className="logo-text"><h1>ProStore</h1></Link>
+    <nav className="navbar">
+      <div className="logo">
+        <Link to="/">ProStore</Link>
+      </div>
       <div className="nav-links">
         <Link to="/">Home</Link>
-        <Link to="/cart" className="cart-link">
-          Cart <span>({cartCount})</span>
-        </Link>
+        <Link to="/cart">Cart ({cartCount})</Link>
+        
+        {/* Conditional Rendering */}
+        {isLoggedIn ? (
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+        ) : (
+          <>
+            <Link to="/register">Register</Link>
+            <Link to="/login">Login</Link>
+          </>
+        )}
       </div>
     </nav>
   );
