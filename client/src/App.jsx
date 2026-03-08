@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Corrected Paths: These assume App.jsx is in /src
 import Navbar from './components/Navbar';
+import Cart from './components/Cart';
+
 import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
-import Cart from './components/Cart';
 import Register from './pages/Register';
 import Login from './pages/Login';
+
 import './App.css';
 
 function App() {
   const [cart, setCart] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Check for token on initial load
+  // Checks for a saved token in the browser's storage on startup
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) setIsLoggedIn(true);
@@ -24,7 +28,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('token'); // Clears the user session
     setIsLoggedIn(false);
     alert("Logged out successfully.");
   };
@@ -32,7 +36,7 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        {/* Pass auth props to Navbar */}
+        {/* Pass state and logout handler to Navbar */}
         <Navbar 
           cartCount={cart.length} 
           isLoggedIn={isLoggedIn} 
@@ -41,11 +45,12 @@ function App() {
         
         <main className="main-content">
           <Routes>
+            {/* Route for the landing page with the product grid */}
             <Route path="/" element={<Home addToCart={addToCart} />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/cart" element={<Cart cartItems={cart} />} />
             <Route path="/register" element={<Register />} />
-            {/* Pass setIsLoggedIn to Login so it can update the state */}
+            {/* Login needs setIsLoggedIn to update the global app state */}
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
           </Routes>
         </main>

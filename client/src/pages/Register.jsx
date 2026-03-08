@@ -1,47 +1,74 @@
-// client/src/App.jsx
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Home from './Home';
-import Cart from '../components/Cart';
-import Login from './Login';
-import Register from './Register';
-import '../App.css';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function App() {
-  const [cartItems, setCartItems] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+function Register() {
+  const [formData, setFormData] = useState({ 
+    username: '', 
+    email: '', 
+    password: '' 
+  });
+  const navigate = useNavigate();
 
-  // Check if token exists on load
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) setIsLoggedIn(true);
-  }, []);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Points to your backend port 5001
+      const response = await fetch('http://localhost:5001/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-  const addToCart = (product) => {
-    setCartItems([...cartItems, product]);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
+      if (response.ok) {
+        alert("Registration successful! Please login.");
+        navigate('/login'); // Redirects to login after success
+      } else {
+        const errorData = await response.json();
+        alert(`Registration failed: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Connection Error:", error);
+      alert("Could not connect to the server. Is your backend running?");
+    }
   };
 
   return (
-    <Router>
-      <Navbar 
-        cartCount={cartItems.length} 
-        isLoggedIn={isLoggedIn} 
-        handleLogout={handleLogout} 
-      />
-      <Routes>
-        <Route path="/" element={<Home addToCart={addToCart} />} />
-        <Route path="/cart" element={<Cart cartItems={cartItems} />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-      </Routes>
-    </Router>
+    <div className="auth-container">
+      <div className="purple-banner-container" style={{ padding: '30px', marginBottom: '2rem' }}>
+        <h2>Join ProStore</h2>
+        <p>Create your account to start shopping</p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="text" 
+          placeholder="Username" 
+          required 
+          onChange={(e) => setFormData({...formData, username: e.target.value})} 
+        />
+        <input 
+          type="email" 
+          placeholder="Email Address" 
+          required 
+          onChange={(e) => setFormData({...formData, email: e.target.value})} 
+        />
+        <input 
+          type="password" 
+          placeholder="Password" 
+          required 
+          onChange={(e) => setFormData({...formData, password: e.target.value})} 
+        />
+        <button type="submit">Register Now</button>
+      </form>
+      
+      <p style={{ marginTop: '1rem', color: 'var(--text-dim)' }}>
+        Already have an account? <span 
+          style={{ color: 'var(--accent-purple)', cursor: 'pointer' }} 
+          onClick={() => navigate('/login')}
+        >Login here</span>
+      </p>
+    </div>
   );
 }
 
-export default App;
+export default Register;
