@@ -1,63 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-// Corrected Paths: These assume App.jsx is in /src
 import Navbar from './components/Navbar';
 import Cart from './components/Cart';
-
 import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
 import Register from './pages/Register';
 import Login from './pages/Login';
-
 import './App.css';
 
 function App() {
   const [cart, setCart] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
-  // Checks for a saved token in the browser's storage on startup
+  // 1. Restore Session on Refresh
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) setIsLoggedIn(true);
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUser({ id: payload.id }); // Restore user object
+        setIsLoggedIn(true);
+      } catch (err) {
+        console.error("Invalid token");
+      }
+    }
   }, []);
 
-  const addToCart = (product) => {
-    setCart((prevCart) => [...prevCart, product]);
-    alert(`${product.name} added to cart!`);
+  // 2. Fetch Cart automatically when user is set
+  useEffect(() => {
+    if (user && user.id) {
+      fetchCart(user.id);
+    }
+  }, [user]);
+
+  const fetchCart = async (userId) => {
+    try {
+      const res = await fetch(`http://localhost:5001/api/cart/${userId}`);
+      const data = await res.json();
+      setCart(data);
+    } catch (err) { console.error("Error fetching cart:", err); }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Clears the user session
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
+    setUser(null);
+    setCart([]);
     alert("Logged out successfully.");
   };
 
   return (
     <Router>
       <div className="app-container">
-        {/* Pass state and logout handler to Navbar */}
-        <Navbar 
-          cartCount={cart.length} 
-          isLoggedIn={isLoggedIn} 
-          handleLogout={handleLogout} 
-        />
-        
+        <Navbar cartCount={cart.length} isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
         <main className="main-content">
           <Routes>
-            {/* Route for the landing page with the product grid */}
-            <Route path="/" element={<Home addToCart={addToCart} />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<Cart cartItems={cart} />} />
+            <Route path="/" element={<Home fetchCart={fetchCart} />} />
+            <Route path="/product/:id" element={<ProductDetails fetchCart={fetchCart} />} />
+            <Route path="/cart" element={<Cart cartItems={cart} fetchCart={fetchCart} />} />
             <Route path="/register" element={<Register />} />
-            {/* Login needs setIsLoggedIn to update the global app state */}
-            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUser={setUser} />} />
           </Routes>
         </main>
-
-        <footer>
-          <p>© 2026 My Pro E-commerce Store</p>
-        </footer>
       </div>
     </Router>
   );

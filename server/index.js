@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2/promise');
-const bcrypt = require('bcrypt'); // Added for password hashing
-const jwt = require('jsonwebtoken'); // Added for session tokens
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -21,97 +21,71 @@ const db = mysql.createPool({
     database: process.env.DB_NAME || 'ecommerce_db',
     port: process.env.DB_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    connectionLimit: 10
 });
 
-async function testConnection() {
-    const connection = await db.getConnection();
-    console.log('✅ Database connected successfully');
-    connection.release();
-}
+/* -------------------- CART ROUTES -------------------- */
 
-/* -------------------- ROUTES -------------------- */
-
-// Health check
-app.get('/', (req, res) => {
-    res.json({ message: '🚀 API is running' });
+// Add item to cart
+app.post('/api/cart', async (req, res, next) => {
+    const { userId, productId } = req.body;
+    try {
+        await db.query('INSERT INTO cart (user_id, product_id) VALUES (?, ?)', [userId, productId]);
+        res.status(201).json({ message: "Item added to cart" });
+    } catch (err) { next(err); }
 });
 
-// Get all products
+// Get user cart
+app.get('/api/cart/:userId', async (req, res, next) => {
+    try {
+        const [items] = await db.query(`
+            SELECT c.id AS cartId, p.id, p.name, p.price, p.image_url 
+            FROM products p JOIN cart c ON p.id = c.product_id WHERE c.user_id = ?`, 
+            [req.params.userId]);
+        res.json(items);
+    } catch (err) { next(err); }
+});
+
+// Remove from cart
+app.delete('/api/cart/:cartId', async (req, res, next) => {
+    try {
+        await db.query('DELETE FROM cart WHERE id = ?', [req.params.cartId]);
+        res.status(200).json({ message: "Item removed" });
+    } catch (err) { next(err); }
+});
+
+/* -------------------- AUTH & PRODUCTS -------------------- */
+
 app.get('/api/products', async (req, res, next) => {
     try {
-        const [rows] = await db.query(`
-            SELECT id, name, description, price, stock, image_url AS image 
-            FROM products
-        `);
+        const [rows] = await db.query(`SELECT id, name, description, price, stock, image_url AS image FROM products`);
         res.json(rows);
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 });
 
-/* -------------------- AUTH ROUTES -------------------- */
-
-// Register Route
 app.post('/api/register', async (req, res, next) => {
     const { username, email, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await db.query(
-            'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)', 
-            [username, email, hashedPassword, 'customer']
-        );
-        res.status(201).json({ message: "User registered successfully" });
-    } catch (error) {
-        next(error);
-    }
+        await db.query('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)', 
+            [username, email, hashedPassword, 'customer']);
+        res.status(201).json({ message: "Registered" });
+    } catch (error) { next(error); }
 });
 
-// Login Route
 app.post('/api/login', async (req, res, next) => {
     const { username, password } = req.body;
     try {
         const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-        
         if (users.length === 0) return res.status(401).json({ error: "User not found" });
 
         const validPassword = await bcrypt.compare(password, users[0].password_hash);
         if (!validPassword) return res.status(401).json({ error: "Invalid password" });
 
-        const token = jwt.sign(
-            { id: users[0].id, role: users[0].role }, 
-            SECRET_KEY, 
-            { expiresIn: '1h' }
-        );
-        
-        res.json({ 
-            token, 
-            user: { username: users[0].username, role: users[0].role } 
-        });
-    } catch (error) {
-        next(error);
-    }
-});
-
-/* -------------------- ERROR HANDLERS -------------------- */
-app.use((req, res) => res.status(404).json({ error: "Route not found" }));
-
-app.use((err, req, res, next) => {
-    console.error("🔥 Server Error:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+        const token = jwt.sign({ id: users[0].id, role: users[0].role }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ token, user: { id: users[0].id, username: users[0].username } });
+    } catch (error) { next(error); }
 });
 
 /* -------------------- START SERVER -------------------- */
-async function startServer() {
-    try {
-        await testConnection();
-    } catch (err) {
-        console.error("⚠️ Starting server without database...");
-    }
-    app.listen(PORT, () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
-}
-
-startServer();
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

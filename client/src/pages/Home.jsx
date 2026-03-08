@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Home({ addToCart }) {
+function Home({ fetchCart }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // CORRECTED: Changed port to 5001 to match your backend
     fetch('http://localhost:5001/api/products')
-      .then((res) => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
         setProducts(data);
         setLoading(false);
@@ -23,13 +19,33 @@ function Home({ addToCart }) {
       });
   }, []);
 
-  const handleBuy = (product) => {
+  const handleBuy = async (product) => {
     const token = localStorage.getItem('token');
     if (!token) {
       alert("Please log in to purchase items!");
       navigate('/login');
-    } else {
-      addToCart(product);
+      return;
+    }
+
+    try {
+      // Decode user ID from token
+      const user = JSON.parse(atob(token.split('.')[1]));
+      
+      const response = await fetch('http://localhost:5001/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, productId: product.id }),
+      });
+
+      if (response.ok) {
+        alert(`${product.name} added to cart!`);
+        // Trigger a re-fetch of the cart so the Navbar count updates immediately
+        fetchCart(user.id);
+      } else {
+        alert("Failed to add item to cart.");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
     }
   };
 
