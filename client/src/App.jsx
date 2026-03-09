@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard'; // Import the new dashboard
 import './App.css';
 
 function App() {
@@ -13,13 +14,14 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  // 1. Restore Session on Refresh
+  // 1. Restore Session (including role) on Refresh
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        setUser({ id: payload.id }); // Restore user object
+        // Restore both id and role
+        setUser({ id: payload.id, role: payload.role }); 
         setIsLoggedIn(true);
       } catch (err) {
         console.error("Invalid token");
@@ -53,7 +55,8 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <Navbar cartCount={cart.length} isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+        {/* Navbar now has access to 'user' for conditional rendering */}
+        <Navbar cartCount={cart.length} isLoggedIn={isLoggedIn} user={user} handleLogout={handleLogout} />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home fetchCart={fetchCart} />} />
@@ -61,6 +64,8 @@ function App() {
             <Route path="/cart" element={<Cart cartItems={cart} fetchCart={fetchCart} />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setUser={setUser} />} />
+            {/* New Admin Route */}
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </main>
       </div>

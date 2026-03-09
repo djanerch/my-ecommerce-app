@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
-function Navbar({ cartCount, isLoggedIn, handleLogout }) {
+// Added 'user' as a prop to check roles
+function Navbar({ cartCount, isLoggedIn, user, handleLogout }) {
   return (
     <nav className="navbar">
       <div className="logo">
@@ -10,7 +11,11 @@ function Navbar({ cartCount, isLoggedIn, handleLogout }) {
         <Link to="/">Home</Link>
         <Link to="/cart">Cart ({cartCount})</Link>
         
-        {/* Conditional Rendering */}
+        {/* Conditional rendering for Admin Panel */}
+        {isLoggedIn && user?.role === 'admin' && (
+          <Link to="/admin" className="admin-link">Admin Panel</Link>
+        )}
+        
         {isLoggedIn ? (
           <button onClick={handleLogout} className="logout-btn">Logout</button>
         ) : (

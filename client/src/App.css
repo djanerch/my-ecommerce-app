@@ -349,3 +349,55 @@ button {
   }
 
 }
+
+/* Container for the page */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e1e1e1;
+}
+
+/* Style for inputs */
+.admin-form input {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.admin-form input:focus {
+  border-color: #6a0dad; /* Matches your purple theme */
+  outline: none;
+}
+
+/* Submit button styling */
+.admin-form button {
+  padding: 12px;
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.admin-form button:hover {
+  background-color: #55088c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .admin-form {
+    width: 90%;
+    margin: 10px auto;
+  }
+}

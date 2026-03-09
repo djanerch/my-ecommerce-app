@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Login({ setIsLoggedIn }) {
+// Added setUser as a prop to update App.jsx state
+function Login({ setIsLoggedIn, setUser }) {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const navigate = useNavigate();
 
@@ -16,10 +17,14 @@ function Login({ setIsLoggedIn }) {
 
       if (response.ok) {
         const data = await response.json();
-        // Save the token so the user stays logged in
+        
+        // Save token and set user data (including the role!)
         localStorage.setItem('token', data.token);
-        setIsLoggedIn(true); // Update state in App.jsx
-        alert("Login successful!");
+        
+        setIsLoggedIn(true);
+        setUser(data.user); // Now App.jsx knows the user's ID and role
+        
+        alert(`Welcome back, ${data.user.username}!`);
         navigate('/');
       } else {
         alert("Invalid username or password.");
